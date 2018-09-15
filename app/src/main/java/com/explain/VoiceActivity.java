@@ -69,10 +69,10 @@ public class VoiceActivity extends AppCompatActivity {
                 mRecognizer.stopListening();
                 Toast.makeText(VoiceActivity.this, "음성 인식 종료", Toast.LENGTH_SHORT).show();
 
-//                if(mRecognizer != null) {
-//                    mRecognizer.cancel();
-//                    mRecognizer.destroy();
-//                }
+                if(mRecognizer != null) {
+                    mRecognizer.cancel();
+                    mRecognizer.destroy();
+                }
             }
         });
     }
