@@ -10,6 +10,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -46,18 +47,19 @@ public class VoiceActivity extends AppCompatActivity {
             }
         }
 
-        // Language 는 한국어. 영어는 "en-US"
-        intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
 
-        mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
-        mRecognizer.setRecognitionListener(recognitionListener);
 
         // 음성 인식 시작
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Language 는 한국어. 영어는 "en-US"
+                intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+                mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
+                mRecognizer.setRecognitionListener(new listener());
                 mRecognizer.startListening(intent);
             }
         });
@@ -77,11 +79,12 @@ public class VoiceActivity extends AppCompatActivity {
         });
     }
 
-    private RecognitionListener recognitionListener = new RecognitionListener() {
+//    private RecognitionListener recognitionListener = new RecognitionListener() {
+    class listener implements RecognitionListener {
         @Override
         public void onReadyForSpeech(Bundle bundle) {
             // 음성 인식 준비 완료
-            //textView.setText("준비 완료");
+            Toast.makeText(VoiceActivity.this, "음성 인식 준비 완료", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -107,7 +110,14 @@ public class VoiceActivity extends AppCompatActivity {
         @Override
         public void onError(int i) {
             //오류가 발생했을 때
-            //textView.setText("빨리 말하세요");
+            Toast.makeText(VoiceActivity.this, "말을 하세요", Toast.LENGTH_SHORT).show();
+            if(mRecognizer != null) {
+                mRecognizer.cancel();
+                mRecognizer.destroy();
+            }
+
+            mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
+            mRecognizer.setRecognitionListener(new listener());
             mRecognizer.startListening(intent);
         }
 
@@ -122,7 +132,6 @@ public class VoiceActivity extends AppCompatActivity {
 
             // 여러 개의 String 중 첫번째 거만 출력
             textView.setText(rs[0]);
-            System.out.println(mResult);
             mRecognizer.startListening(intent);
         }
 
