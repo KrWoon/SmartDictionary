@@ -132,7 +132,6 @@ public class VoiceActivity extends AppCompatActivity {
 
             // 여러 개의 String 중 첫번째 거만 출력
             textView.setText(rs[0]);
-            System.out.println(mResult);
             mRecognizer.startListening(intent);
         }
 
