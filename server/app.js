@@ -4,6 +4,12 @@ var app = express();
 var client_id = 'W8zmbB6bAGyXWmlr7d8O';
 var client_secret = 'u8yw58ggR8';
 
+app.get('/', function(req, res) {
+  res.write('hello world');
+  res.end();
+});
+
+
 app.get('/search/encyc', function (req, res) {
    var api_url = 'https://openapi.naver.com/v1/search/encyc?query=' + encodeURI("파이썬"); // json 결과
    var request = require('request');
