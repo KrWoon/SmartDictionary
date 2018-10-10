@@ -5,10 +5,9 @@ var client_id = 'W8zmbB6bAGyXWmlr7d8O';
 var client_secret = 'u8yw58ggR8';
 
 app.get('/', function(req, res) {
-  res.write('hello world');
-  res.end();
+  res.render('index', {title:'Heroku'});
+  conosle.log('hello world');
 });
-
 
 app.get('/search/encyc', function (req, res) {
    var api_url = 'https://openapi.naver.com/v1/search/encyc?query=' + encodeURI("파이썬"); // json 결과
@@ -38,7 +37,8 @@ app.get('/search/encyc', function (req, res) {
     var inputData;
 
     req.on('data', function(data) {
-      var api_url = 'https://openapi.naver.com/v1/search/encyc?query=' + encodeURI("파이썬"); // json 결과
+      var inputStr = "롤챔스"
+      var api_url = 'https://openapi.naver.com/v1/search/encyc?query=' + encodeURI(inputStr); // json 결과
       var request = require('request');
       var options = {
           url: api_url,
