@@ -1,5 +1,6 @@
 package com.explain;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.Manifest;
@@ -16,7 +17,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.util.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static java.security.AccessController.getContext;
 
@@ -47,12 +54,13 @@ public class VoiceActivity extends AppCompatActivity {
             }
         }
 
-
-
         // 음성 인식 시작
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                new JSONTask().execute("http://175.115.66.200:3000/order/post");//AsyncTask 시작시킴
+//                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
+
                 // Language 는 한국어. 영어는 "en-US"
                 intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
@@ -68,10 +76,10 @@ public class VoiceActivity extends AppCompatActivity {
         endBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mRecognizer.stopListening();
-                Toast.makeText(VoiceActivity.this, "음성 인식 종료", Toast.LENGTH_SHORT).show();
-
                 if(mRecognizer != null) {
+                    mRecognizer.stopListening();
+                    Toast.makeText(VoiceActivity.this, "음성 인식 종료", Toast.LENGTH_SHORT).show();
+
                     mRecognizer.cancel();
                     mRecognizer.destroy();
                 }
@@ -144,4 +152,86 @@ public class VoiceActivity extends AppCompatActivity {
         public void onEvent(int i, Bundle bundle) {
         }
     };
+
+    public class JSONTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... urls) {
+            try {
+                //JSONObject를 만들고 key value 형식으로 값을 저장해준다.
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.accumulate("user_id", "androidTest");
+                jsonObject.accumulate("name", "yun");
+
+                HttpURLConnection con = null;
+                BufferedReader reader = null;
+
+                try{
+                    //URL url = new URL("http://192.168.25.16:3000/users");
+                    URL url = new URL(urls[0]);
+                    //연결을 함
+                    con = (HttpURLConnection) url.openConnection();
+
+                    con.setRequestMethod("POST");//POST방식으로 보냄
+                    con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
+                    con.setRequestProperty("Content-Type", "application/json");//application JSON 형식으로 전송
+                    con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
+                    con.setDoOutput(true);//Outstream으로 post 데이터를 넘겨주겠다는 의미
+                    con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
+                    con.connect();
+
+                    //서버로 보내기위해서 스트림 만듬
+                    OutputStream outStream = con.getOutputStream();
+                    //버퍼를 생성하고 넣음
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
+                    writer.write(jsonObject.toString());
+                    writer.flush();
+                    writer.close();//버퍼를 받아줌
+
+                    //서버로 부터 데이터를 받음
+                    InputStream stream = con.getInputStream();
+
+                    reader = new BufferedReader(new InputStreamReader(stream));
+
+                    StringBuffer buffer = new StringBuffer();
+
+                    String line = "";
+                    while((line = reader.readLine()) != null){
+                        buffer.append(line);
+                    }
+
+                    return buffer.toString();//서버로 부터 받은 값을 리턴해줌 아마 OK!!가 들어올것임
+
+                } catch (MalformedURLException e){
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if(con != null){
+                        con.disconnect();
+                    }
+                    try {
+                        if(reader != null){
+                            reader.close();//버퍼를 닫아줌
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            textView.setText(result);//서버로 부터 받은 값을 출력해주는 부
+        }
+    }
 }
+
+
+
