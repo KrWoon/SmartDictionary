@@ -74,15 +74,15 @@ public class VoiceActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
+                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
                 // Language 는 한국어. 영어는 "en-US"
-                intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-
-                mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
-                mRecognizer.setRecognitionListener(new listener());
-                mRecognizer.startListening(intent);
+//                intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+//                intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+//                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+//
+//                mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
+//                mRecognizer.setRecognitionListener(new listener());
+//                mRecognizer.startListening(intent);
             }
         });
 
