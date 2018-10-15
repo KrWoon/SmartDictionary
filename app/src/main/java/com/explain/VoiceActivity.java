@@ -58,9 +58,7 @@ public class VoiceActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                new JSONTask().execute("http://175.115.66.200:3000/order/post");//AsyncTask 시작시킴
 //                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
-
                 // Language 는 한국어. 영어는 "en-US"
                 intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
@@ -228,7 +226,7 @@ public class VoiceActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            textView.setText(result);//서버로 부터 받은 값을 출력해주는 부
+            textView.setText(result);//서버로 부터 받은 값을 출력해주는 부분
         }
     }
 }
