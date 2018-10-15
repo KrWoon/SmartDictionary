@@ -69,15 +69,15 @@ public class VoiceActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
+//                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
                 // Language 는 한국어. 영어는 "en-US"
-//                intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-//                intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-//                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-//
-//                mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
-//                mRecognizer.setRecognitionListener(new listener());
-//                mRecognizer.startListening(intent);
+                intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+                mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
+                mRecognizer.setRecognitionListener(new listener());
+                mRecognizer.startListening(intent);
             }
         });
 
@@ -148,6 +148,7 @@ public class VoiceActivity extends AppCompatActivity {
             mResult.toArray(rs);
             // 여러 개의 String 중 첫번째 거만 출력
             textView.setText(rs[0]);
+
             long now = System.currentTimeMillis();
             Date date = new Date(now);
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
@@ -157,7 +158,6 @@ public class VoiceActivity extends AppCompatActivity {
             // 보여줄 단어와 시간을 word에 저장
             wordView.setText(word);
             timeView.setText(timeString);
-            Log.d("good", "good");
             mRecognizer.startListening(intent);
         }
 
