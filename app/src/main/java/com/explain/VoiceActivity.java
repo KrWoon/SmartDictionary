@@ -1,16 +1,16 @@
 package com.explain;
 
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,18 +19,29 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import static java.security.AccessController.getContext;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class VoiceActivity extends AppCompatActivity {
     Intent intent;
     SpeechRecognizer mRecognizer;
     TextView textView;
+    TextView wordView;
+    TextView timeView;
+    String word;
+    String timeString;
+    String time;
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
 
     @Override
@@ -135,9 +146,17 @@ public class VoiceActivity extends AppCompatActivity {
 
             String[] rs = new String[mResult.size()];
             mResult.toArray(rs);
-
             // 여러 개의 String 중 첫번째 거만 출력
             textView.setText(rs[0]);
+            long now = System.currentTimeMillis();
+            Date date = new Date(now);
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            time = sdf.format(date);
+            timeString = timeString + time +"\r\n";
+            word = word + rs[0] + "\r\n";
+            // 보여줄 단어와 시간을 word에 저장
+            wordView.setText(word);
+            timeView.setText(timeString);
             Log.d("good", "good");
             mRecognizer.startListening(intent);
         }
