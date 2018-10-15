@@ -51,8 +51,13 @@ public class VoiceActivity extends AppCompatActivity {
 
         // 버튼과 텍스트뷰
         textView = (TextView) findViewById(R.id.textView);
+        wordView = (TextView) findViewById(R.id.wordView);
+        timeView = (TextView) findViewById(R.id.timeView);
         Button startBtn = (Button) findViewById(R.id.button01);
         Button endBtn = (Button) findViewById(R.id.button02);
+        word = "";
+        time = "";
+        timeString = "";
 
         // 음성 인식 허용
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
