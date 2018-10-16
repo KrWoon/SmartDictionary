@@ -1,8 +1,10 @@
 package com.explain;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -12,8 +14,15 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,16 +41,17 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 
 public class VoiceActivity extends AppCompatActivity {
     Intent intent;
     SpeechRecognizer mRecognizer;
-    TextView textView;
-    TextView wordView;
-    TextView timeView;
-    String word;
-    String timeString;
-    String time;
+    private ListView wordView = null;
+    private ListViewAdapter lvAdapter = null;
+    String time="";
+    Button startBtn;
+    Button endBtn;
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
 
     @Override
@@ -50,14 +60,13 @@ public class VoiceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_voice);
 
         // 버튼과 텍스트뷰
-        textView = (TextView) findViewById(R.id.textView);
-        wordView = (TextView) findViewById(R.id.wordView);
-        timeView = (TextView) findViewById(R.id.timeView);
-        Button startBtn = (Button) findViewById(R.id.button01);
-        Button endBtn = (Button) findViewById(R.id.button02);
-        word = "";
-        time = "";
-        timeString = "";
+        wordView = (ListView) findViewById(R.id.wordView);
+        startBtn = (Button) findViewById(R.id.button01);
+        endBtn = (Button) findViewById(R.id.button02);
+
+        lvAdapter = new ListViewAdapter(this.getApplicationContext());
+        wordView.setAdapter(lvAdapter);
+
 
         // 음성 인식 허용
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -75,7 +84,12 @@ public class VoiceActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 //                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
+
+                startBtn.setVisibility(View.GONE);
+                endBtn.setVisibility(View.VISIBLE);
+
                 // Language 는 한국어. 영어는 "en-US"
+//                Toast.makeText(VoiceActivity.this, "음성 인식 시작", Toast.LENGTH_SHORT).show();
                 intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
@@ -90,9 +104,13 @@ public class VoiceActivity extends AppCompatActivity {
         endBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                startBtn.setVisibility(View.VISIBLE);
+                endBtn.setVisibility(View.GONE);
+
                 if(mRecognizer != null) {
                     mRecognizer.stopListening();
-                    Toast.makeText(VoiceActivity.this, "음성 인식 종료", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(VoiceActivity.this, "음성 인식 종료", Toast.LENGTH_SHORT).show();
 
                     mRecognizer.cancel();
                     mRecognizer.destroy();
@@ -101,12 +119,11 @@ public class VoiceActivity extends AppCompatActivity {
         });
     }
 
-//    private RecognitionListener recognitionListener = new RecognitionListener() {
     class listener implements RecognitionListener {
         @Override
         public void onReadyForSpeech(Bundle bundle) {
             // 음성 인식 준비 완료
-            Toast.makeText(VoiceActivity.this, "음성 인식 준비 완료", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(VoiceActivity.this, "음성 인식 준비 완료", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -132,7 +149,7 @@ public class VoiceActivity extends AppCompatActivity {
         @Override
         public void onError(int i) {
             //오류가 발생했을 때
-            Toast.makeText(VoiceActivity.this, "말을 하세요", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(VoiceActivity.this, "말을 하세요", Toast.LENGTH_SHORT).show();
             if(mRecognizer != null) {
                 mRecognizer.cancel();
                 mRecognizer.destroy();
@@ -151,18 +168,15 @@ public class VoiceActivity extends AppCompatActivity {
 
             String[] rs = new String[mResult.size()];
             mResult.toArray(rs);
-            // 여러 개의 String 중 첫번째 거만 출력
-            textView.setText(rs[0]);
 
             long now = System.currentTimeMillis();
             Date date = new Date(now);
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
             time = sdf.format(date);
-            timeString = timeString + time +"\r\n";
-            word = word + rs[0] + "\r\n";
+
             // 보여줄 단어와 시간을 word에 저장
-            wordView.setText(word);
-            timeView.setText(timeString);
+            lvAdapter.addItem("단어", rs[0], time);
+            lvAdapter.dataChange();
             mRecognizer.startListening(intent);
         }
 
@@ -174,6 +188,81 @@ public class VoiceActivity extends AppCompatActivity {
         public void onEvent(int i, Bundle bundle) {
         }
     };
+
+    private class ViewHolder {
+        public TextView mWord;
+        public TextView mText;
+        public TextView mDate;
+
+    }
+
+    private class ListViewAdapter extends BaseAdapter {
+        private Context mContext = null;
+        private ArrayList<ListData> mListData = new ArrayList<ListData>();
+
+        public ListViewAdapter(Context mContext) {
+            super();
+            this.mContext = mContext;
+        }
+
+        @Override
+        public int getCount() {
+            return mListData.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return mListData.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public void addItem(String mWord, String mTitle, String mDate){
+            ListData addInfo = null;
+            addInfo = new ListData();
+            addInfo.mWord = mWord;
+            addInfo.mTitle = mTitle;
+            addInfo.mDate = mDate;
+
+            mListData.add(addInfo);
+        }
+
+
+        public void dataChange(){
+            lvAdapter.notifyDataSetChanged();
+        }
+
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                holder = new ViewHolder();
+
+                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = inflater.inflate(R.layout.left_row, null);
+
+                holder.mWord = (TextView) convertView.findViewById(R.id.mWord);
+                holder.mText = (TextView) convertView.findViewById(R.id.mText);
+                holder.mDate = (TextView) convertView.findViewById(R.id.mDate);
+
+                convertView.setTag(holder);
+            }else{
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            ListData mData = mListData.get(position);
+
+            holder.mWord.setText(mData.mWord);
+            holder.mText.setText(mData.mTitle);
+            holder.mDate.setText(mData.mDate);
+
+            return convertView;
+        }
+    }
 
     public class JSONTask extends AsyncTask<String, String, String> {
 
@@ -250,7 +339,8 @@ public class VoiceActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            textView.setText(result);//서버로 부터 받은 값을 출력해주는 부분
+            lvAdapter.addItem("속도 테스트", result, "00:00");
+            lvAdapter.dataChange();
         }
     }
 }
