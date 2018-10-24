@@ -1,10 +1,8 @@
 package com.explain;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -13,18 +11,11 @@ import android.speech.SpeechRecognizer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
+
+import com.explain.ListViewUI.ListViewAdapter;
 
 import org.json.JSONObject;
 
@@ -41,7 +32,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 
 public class VoiceActivity extends AppCompatActivity {
@@ -176,7 +166,7 @@ public class VoiceActivity extends AppCompatActivity {
 
             // 보여줄 단어와 시간을 word에 저장
             lvAdapter.addItem("단어", rs[0], time);
-            lvAdapter.dataChange();
+            lvAdapter.notifyDataSetChanged();
             mRecognizer.startListening(intent);
         }
 
@@ -189,81 +179,8 @@ public class VoiceActivity extends AppCompatActivity {
         }
     };
 
-    private class ViewHolder {
-        public TextView mWord;
-        public TextView mText;
-        public TextView mDate;
 
-    }
-
-    private class ListViewAdapter extends BaseAdapter {
-        private Context mContext = null;
-        private ArrayList<ListData> mListData = new ArrayList<ListData>();
-
-        public ListViewAdapter(Context mContext) {
-            super();
-            this.mContext = mContext;
-        }
-
-        @Override
-        public int getCount() {
-            return mListData.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return mListData.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public void addItem(String mWord, String mTitle, String mDate){
-            ListData addInfo = null;
-            addInfo = new ListData();
-            addInfo.mWord = mWord;
-            addInfo.mTitle = mTitle;
-            addInfo.mDate = mDate;
-
-            mListData.add(addInfo);
-        }
-
-
-        public void dataChange(){
-            lvAdapter.notifyDataSetChanged();
-        }
-
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                holder = new ViewHolder();
-
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.left_row, null);
-
-                holder.mWord = (TextView) convertView.findViewById(R.id.mWord);
-                holder.mText = (TextView) convertView.findViewById(R.id.mText);
-                holder.mDate = (TextView) convertView.findViewById(R.id.mDate);
-
-                convertView.setTag(holder);
-            }else{
-                holder = (ViewHolder) convertView.getTag();
-            }
-
-            ListData mData = mListData.get(position);
-
-            holder.mWord.setText(mData.mWord);
-            holder.mText.setText(mData.mTitle);
-            holder.mDate.setText(mData.mDate);
-
-            return convertView;
-        }
-    }
-
+    /* 데이터 전송을 맡음 */
     public class JSONTask extends AsyncTask<String, String, String> {
 
         @Override
@@ -340,7 +257,7 @@ public class VoiceActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             lvAdapter.addItem("속도 테스트", result, "00:00");
-            lvAdapter.dataChange();
+            lvAdapter.notifyDataSetChanged();
         }
     }
 }
