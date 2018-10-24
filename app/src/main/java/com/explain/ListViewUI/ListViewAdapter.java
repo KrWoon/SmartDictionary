@@ -39,6 +39,14 @@ public class ListViewAdapter extends BaseAdapter {
         return position;
     }
 
+    public void addItem(String mWord) {
+        ListData addInfo = null;
+        addInfo = new ListData();
+        addInfo.mWord = mWord;
+
+        mListData.add(addInfo);
+    }
+
     public void addItem(String mWord, String mTitle, String mDate){
         ListData addInfo = null;
         addInfo = new ListData();
