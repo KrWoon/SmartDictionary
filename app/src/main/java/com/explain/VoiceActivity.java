@@ -47,6 +47,7 @@ public class VoiceActivity extends AppCompatActivity {
     Button startBtn;
     Button endBtn;
     HashSet<String> returnvalue = null;
+    HashSet<String> set = new HashSet<String>();
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
 
     @Override
@@ -88,6 +89,7 @@ public class VoiceActivity extends AppCompatActivity {
                 intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
                 mRecognizer = SpeechRecognizer.createSpeechRecognizer(VoiceActivity.this);
                 mRecognizer.setRecognitionListener(new listener());
@@ -157,45 +159,45 @@ public class VoiceActivity extends AppCompatActivity {
 
         @Override
         public void onResults(Bundle bundle) {
-            String key = "";
-            key = SpeechRecognizer.RESULTS_RECOGNITION;
+            String key = SpeechRecognizer.RESULTS_RECOGNITION;
             ArrayList<String> mResult = bundle.getStringArrayList(key);
 
-            String[] rs = new String[mResult.size()];
-            mResult.toArray(rs);
-
-            /* 현재 시간 계산 */
-            long now = System.currentTimeMillis();
-            Date date = new Date(now);
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-            time = sdf.format(date);
-
-            /* 분석하는 문장은 최대 2개 */
-            int len = 1;
-            if(rs.length > 1)
-                len = 2;
-
-            /* 두개 의 문장을 분석해서 basket에 담는다 */
-            HashSet<String> basket = new HashSet<String>();
-            for(int i=0; i<len; i++) {
-                returnvalue = nounExtracter.getNoun(rs[i]);
-                basket.addAll(returnvalue);
-            }
-
-            /* basket 셋에 담긴 단어를 리스트뷰에 넣는다. */
-            Iterator<String> it = basket.iterator();
-            while(it.hasNext()) {
-                // 보여줄 단어와 시간을 word에 저장
-                lvAdapter.addItem(it.next());
-            }
-
-            lvAdapter.addItem("", rs[0], time);
+            lvAdapter.addItem("", mResult.get(0), time);
             lvAdapter.notifyDataSetChanged();
             mRecognizer.startListening(intent);
         }
 
         @Override
         public void onPartialResults(Bundle bundle) {
+            /** 음성 인식 중간 중간에 계속해서 단어 추출*/
+            if ((bundle != null) && bundle.containsKey(SpeechRecognizer.RESULTS_RECOGNITION)) {
+
+                String key = SpeechRecognizer.RESULTS_RECOGNITION;
+                ArrayList<String> message = bundle.getStringArrayList(key);
+
+                /* 현재 시간 계산 */
+                long now = System.currentTimeMillis();
+                Date date = new Date(now);
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                time = sdf.format(date);
+
+                /* 문장을 형태소 단위로 분리 */
+                returnvalue = nounExtracter.getNoun(message.get(0));
+
+                /* 형태소 단위로 분리된 단어들을 출력 */
+                Iterator<String> it = returnvalue.iterator();
+                while(it.hasNext()) {
+                    String word = it.next();
+                    if(set.contains(word)) {
+                        // 만약 이미 출력한 단어면 생략
+                    } else {
+                        lvAdapter.addItem(word, "", time);
+                        set.add(word);
+                    }
+                }
+
+                lvAdapter.notifyDataSetChanged();
+            }
         }
 
         @Override
