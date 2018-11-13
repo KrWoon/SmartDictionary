@@ -17,6 +17,8 @@ import android.widget.ListView;
 
 import com.explain.ListViewUI.ListViewAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -44,6 +46,7 @@ public class VoiceActivity extends AppCompatActivity {
     private ListView wordView = null;
     private ListViewAdapter lvAdapter = null;
     String time="";
+    String sendWord = "";
     Button startBtn;
     Button endBtn;
     HashSet<String> returnvalue = null;
@@ -79,8 +82,6 @@ public class VoiceActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                new JSONTask().execute("https://freeorder1010.herokuapp.com/order/post");//AsyncTask 시작시킴
-
                 startBtn.setVisibility(View.GONE);
                 endBtn.setVisibility(View.VISIBLE);
 
@@ -191,8 +192,10 @@ public class VoiceActivity extends AppCompatActivity {
                     if(set.contains(word)) {
                         // 만약 이미 출력한 단어면 생략
                     } else {
-                        lvAdapter.addItem(word, "", time);
                         set.add(word);
+                        sendWord = word;
+                        new JSONTask().execute("https://smartdictionary2.herokuapp.com/");//AsyncTask 시작시킴
+
                     }
                 }
 
@@ -214,14 +217,12 @@ public class VoiceActivity extends AppCompatActivity {
             try {
                 //JSONObject를 만들고 key value 형식으로 값을 저장해준다.
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.accumulate("user_id", "androidTest");
-                jsonObject.accumulate("name", "yun");
+                jsonObject.accumulate("word", sendWord);
 
                 HttpURLConnection con = null;
                 BufferedReader reader = null;
 
                 try{
-                    //URL url = new URL("http://192.168.25.16:3000/users");
                     URL url = new URL(urls[0]);
                     //연결을 함
                     con = (HttpURLConnection) url.openConnection();
@@ -282,8 +283,22 @@ public class VoiceActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            lvAdapter.addItem("속도 테스트", result, "00:00");
-            lvAdapter.notifyDataSetChanged();
+//            lvAdapter.addItem(sendWord, result, time);
+//            lvAdapter.notifyDataSetChanged();
+
+            try {
+                JSONObject jobject = new JSONObject(result);
+
+                String resultWord = jobject.getString("word");
+                String resultDescription = jobject.getString("description");
+                String resultLink = jobject.getString("link");
+
+                lvAdapter.addItem(sendWord, resultDescription + " " + resultLink, time);
+                lvAdapter.notifyDataSetChanged();
+
+            } catch(JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
