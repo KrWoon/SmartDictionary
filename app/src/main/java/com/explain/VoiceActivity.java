@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static com.explain.MainActivity.nounExtracter;
 
@@ -51,6 +53,7 @@ public class VoiceActivity extends AppCompatActivity {
     Button endBtn;
     HashSet<String> returnvalue = null;
     HashSet<String> set = new HashSet<String>();
+    Queue<String> q = new LinkedList<String>();
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
 
     @Override
@@ -160,11 +163,6 @@ public class VoiceActivity extends AppCompatActivity {
 
         @Override
         public void onResults(Bundle bundle) {
-            String key = SpeechRecognizer.RESULTS_RECOGNITION;
-            ArrayList<String> mResult = bundle.getStringArrayList(key);
-
-            lvAdapter.addItem("", mResult.get(0), time);
-            lvAdapter.notifyDataSetChanged();
             mRecognizer.startListening(intent);
         }
 
@@ -193,13 +191,15 @@ public class VoiceActivity extends AppCompatActivity {
                         // 만약 이미 출력한 단어면 생략
                     } else {
                         set.add(word);
-                        sendWord = word;
-                        new JSONTask().execute("https://smartdictionary2.herokuapp.com/");//AsyncTask 시작시킴
-
+                        q.offer(word);
                     }
                 }
 
-                lvAdapter.notifyDataSetChanged();
+                /* 큐에 담아놨다가 순서대로 호출 */
+                for(int i=0; i<q.size(); i++) {
+                    new JSONTask().execute("https://smartdictionary2.herokuapp.com/");//AsyncTask 시작시킴
+//                    new JSONTask().execute("http://175.115.66.200:3000/");//AsyncTask 시작시킴
+                }
             }
         }
 
@@ -217,7 +217,7 @@ public class VoiceActivity extends AppCompatActivity {
             try {
                 //JSONObject를 만들고 key value 형식으로 값을 저장해준다.
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.accumulate("word", sendWord);
+                jsonObject.accumulate("word", q.poll());
 
                 HttpURLConnection con = null;
                 BufferedReader reader = null;
@@ -283,8 +283,6 @@ public class VoiceActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-//            lvAdapter.addItem(sendWord, result, time);
-//            lvAdapter.notifyDataSetChanged();
 
             try {
                 JSONObject jobject = new JSONObject(result);
@@ -293,7 +291,7 @@ public class VoiceActivity extends AppCompatActivity {
                 String resultDescription = jobject.getString("description");
                 String resultLink = jobject.getString("link");
 
-                lvAdapter.addItem(sendWord, resultDescription + " " + resultLink, time);
+                lvAdapter.addItem(resultWord, resultDescription, time, resultLink);
                 lvAdapter.notifyDataSetChanged();
 
             } catch(JSONException e) {

@@ -1,5 +1,6 @@
 package com.explain.ListViewUI;
 
+import android.widget.Button;
 import android.widget.TextView;
 
 /**
@@ -10,4 +11,5 @@ public class ViewHolder {
     public TextView mWord;
     public TextView mText;
     public TextView mDate;
+    public Button mButton;
 }

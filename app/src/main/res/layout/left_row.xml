@@ -5,37 +5,52 @@
     android:layout_margin="10dp"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/mWord"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_weight="1"
-        android:text="Word"
-        android:textSize="18sp" />
-
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/mText"
+        <Button
+            android:id="@+id/mButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
             android:layout_weight="1"
-            android:background="@drawable/inbox2" />
+            android:background="?android:attr/actionModeWebSearchDrawable" />
 
         <TextView
-            android:id="@+id/mDate"
+                android:id="@+id/mWord"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                android:text="Word"
+                android:textSize="24sp" />
+    </LinearLayout>
+
+    <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:minWidth="75dp"
-            android:text="Date" />
-    </LinearLayout>
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/mText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/inbox" />
+
+            <TextView
+                android:id="@+id/mDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                android:minWidth="75dp"
+                android:text="Date" />
+        </LinearLayout>
+
 
 </LinearLayout>
 

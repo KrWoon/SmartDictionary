@@ -23,4 +23,7 @@ public class ListData {
     // 시간
     public String mDate;
 
+    // 링크
+    public String mLink;
+
 }
