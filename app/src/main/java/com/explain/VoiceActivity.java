@@ -1,8 +1,11 @@
 package com.explain;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -11,6 +14,7 @@ import android.speech.SpeechRecognizer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -34,9 +38,11 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 import static com.explain.MainActivity.nounExtracter;
@@ -47,14 +53,14 @@ public class VoiceActivity extends AppCompatActivity {
     SpeechRecognizer mRecognizer;
     private ListView wordView = null;
     private ListViewAdapter lvAdapter = null;
-    String time="";
-    String sendWord = "";
     Button startBtn;
     Button endBtn;
     HashSet<String> returnvalue = null;
     HashSet<String> set = new HashSet<String>();
     Queue<String> q = new LinkedList<String>();
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
+    private SQLite db = null;
+    HashMap<String, Integer> map = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +71,11 @@ public class VoiceActivity extends AppCompatActivity {
         wordView = (ListView) findViewById(R.id.wordView);
         startBtn = (Button) findViewById(R.id.button01);
         endBtn = (Button) findViewById(R.id.button02);
+
+        /** sqlite에서 hashmap 형식으로 데이터 가져오기 */
+        db = new SQLite(this.getApplicationContext());
+//        db.deleteData();
+        map = db.getAllData();
 
         lvAdapter = new ListViewAdapter(this.getApplicationContext());
         wordView.setAdapter(lvAdapter);
@@ -120,6 +131,54 @@ public class VoiceActivity extends AppCompatActivity {
         });
     }
 
+    public void onPause() {
+        super.onPause();
+        db.deleteData();
+        db.insertAllData(map);
+    }
+
+    public String getCurrentTime() {
+        /* 현재 시간 계산 */
+        long now = System.currentTimeMillis();
+        Date date = new Date(now);
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        return sdf.format(date);
+    }
+
+    public void print(HashMap<String, Integer> data) {
+        Log.d("알림", "프린트 시작");
+
+        for (Map.Entry<String, Integer> element : data.entrySet()){
+            Log.d("알림", element.getKey() + " " + element.getValue());
+        }
+    }
+
+    public Boolean isImportant(HashMap<String, Integer> data, String targetWord){
+        /** 처음 사용되는 단어는 뜻을 출력 */
+        if(!map.containsKey(targetWord)) {
+            return true;
+        }
+
+        int numberOfNoun = data.size();                         // 명사의 갯수
+        int totalCountOfNoun = 0;                               // value 들의 합 (명사 사용 횟수들의 총 합)
+        for (Map.Entry<String, Integer> element : data.entrySet()){
+            totalCountOfNoun += element.getValue();
+        }
+
+
+        double averageUseCount;
+        if(numberOfNoun == 0)
+            averageUseCount = 1;
+        else
+            averageUseCount = (double) totalCountOfNoun / numberOfNoun;
+
+
+        if(data.get(targetWord) < averageUseCount)
+            return true;
+        else
+            return false;
+    }
+
     class listener implements RecognitionListener {
         @Override
         public void onReadyForSpeech(Bundle bundle) {
@@ -163,7 +222,34 @@ public class VoiceActivity extends AppCompatActivity {
 
         @Override
         public void onResults(Bundle bundle) {
+            String key = SpeechRecognizer.RESULTS_RECOGNITION;
+            ArrayList<String> message = bundle.getStringArrayList(key);
+
+            /* 문장을 형태소 단위로 분리 */
+            returnvalue = nounExtracter.getNoun(message.get(0));
+
+            /* 형태소 단위로 분리된 단어들을 출력 */
+            Iterator<String> it = returnvalue.iterator();
+            while(it.hasNext()) {
+                String targetWord = it.next();
+
+                /** 처음 사용되는 단어는 뜻을 출력 */
+                if(!map.containsKey(targetWord)) {
+                    Log.d("알림", targetWord + ": 없는 단어입니다");
+                    map.put(targetWord, 1);
+                }
+                else {
+                    /** 횟수 하나 증가 */
+                    Log.d("알림", targetWord + ": 횟수를 하나 추가합니다");
+                    int calls = map.get(targetWord);
+                    map.put(targetWord, calls + 1);
+                }
+            }
+
+            /** 음성인식 재시작 */
             mRecognizer.startListening(intent);
+
+            print(map);
         }
 
         @Override
@@ -174,24 +260,26 @@ public class VoiceActivity extends AppCompatActivity {
                 String key = SpeechRecognizer.RESULTS_RECOGNITION;
                 ArrayList<String> message = bundle.getStringArrayList(key);
 
-                /* 현재 시간 계산 */
-                long now = System.currentTimeMillis();
-                Date date = new Date(now);
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-                time = sdf.format(date);
-
                 /* 문장을 형태소 단위로 분리 */
                 returnvalue = nounExtracter.getNoun(message.get(0));
 
                 /* 형태소 단위로 분리된 단어들을 출력 */
                 Iterator<String> it = returnvalue.iterator();
                 while(it.hasNext()) {
-                    String word = it.next();
-                    if(set.contains(word)) {
+                    String targetWord = it.next();
+
+                    if(set.contains(targetWord)) {
                         // 만약 이미 출력한 단어면 생략
+                        Log.d("알림", targetWord + ": 이미 출력한 단어입니다.");
                     } else {
-                        set.add(word);
-                        q.offer(word);
+                        /** 중요명사면 출력 **/
+                        if(isImportant(map, targetWord) == true) {
+                            Log.d("알림", targetWord + ": 중요 명사입니다.");
+                            set.add(targetWord);
+                            q.offer(targetWord);
+                        } else {
+                            Log.d("알림", targetWord + ": 중요하지 않은 명사입니다.");
+                        }
                     }
                 }
 
@@ -291,7 +379,7 @@ public class VoiceActivity extends AppCompatActivity {
                 String resultDescription = jobject.getString("description");
                 String resultLink = jobject.getString("link");
 
-                lvAdapter.addItem(resultWord, resultDescription, time, resultLink);
+                lvAdapter.addItem(resultWord, resultDescription, getCurrentTime(), resultLink);
                 lvAdapter.notifyDataSetChanged();
 
             } catch(JSONException e) {
