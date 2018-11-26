@@ -33,20 +33,8 @@ public class SQLite extends SQLiteOpenHelper {
 
     }
 
-    public void insertData(String insertWord, int insertCalls) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues cv = new ContentValues();
-        cv.put(COLUMN_WORD, insertWord);
-        cv.put(COLUMN_CALLS, insertCalls);
-
-        db.insert(TABLE_NAME, null, cv);
-        db.close();
-    }
-
     /** Map의 모든 데이터 집어넣기 */
     public void insertAllData(HashMap<String, Integer> map) {
-        Log.d("알림", "데이터 넣기");
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
@@ -54,7 +42,6 @@ public class SQLite extends SQLiteOpenHelper {
         for( Map.Entry<String, Integer> elem : map.entrySet() ) {
             cv.put(COLUMN_WORD, elem.getKey());
             cv.put(COLUMN_CALLS, elem.getValue());
-            Log.d("알림", elem.getKey() + " " + elem.getValue().toString() + " insert");
             db.insert(TABLE_NAME, null, cv);
         }
 
@@ -63,7 +50,6 @@ public class SQLite extends SQLiteOpenHelper {
 
     /** 모든 데이터 가져오기 */
     public HashMap<String, Integer> getAllData() {
-        Log.d("알림", "데이터 가져오기");
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         String selectQuery = "select * from " + TABLE_NAME;
 
@@ -74,7 +60,6 @@ public class SQLite extends SQLiteOpenHelper {
             do {
                 String word = cursor.getString(0);
                 int calls = Integer.parseInt(cursor.getString(1));
-                Log.d("알림", cursor.getString(0) + " "  + cursor.getString(1) + " 조회");
                 System.out.println(cursor.getString(0));
                 map.put(word, calls);
             } while(cursor.moveToNext());
@@ -84,9 +69,9 @@ public class SQLite extends SQLiteOpenHelper {
     }
 
     public void deleteData() {
-        Log.d("알림", "데이터 지우기");
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("delete from " + TABLE_NAME);
     }
 
 }
+

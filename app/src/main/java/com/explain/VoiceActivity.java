@@ -145,14 +145,6 @@ public class VoiceActivity extends AppCompatActivity {
         return sdf.format(date);
     }
 
-    public void print(HashMap<String, Integer> data) {
-        Log.d("알림", "프린트 시작");
-
-        for (Map.Entry<String, Integer> element : data.entrySet()){
-            Log.d("알림", element.getKey() + " " + element.getValue());
-        }
-    }
-
     public Boolean isImportant(HashMap<String, Integer> data, String targetWord){
         /** 처음 사용되는 단어는 뜻을 출력 */
         if(!map.containsKey(targetWord)) {
@@ -235,12 +227,10 @@ public class VoiceActivity extends AppCompatActivity {
 
                 /** 처음 사용되는 단어는 뜻을 출력 */
                 if(!map.containsKey(targetWord)) {
-                    Log.d("알림", targetWord + ": 없는 단어입니다");
                     map.put(targetWord, 1);
                 }
                 else {
                     /** 횟수 하나 증가 */
-                    Log.d("알림", targetWord + ": 횟수를 하나 추가합니다");
                     int calls = map.get(targetWord);
                     map.put(targetWord, calls + 1);
                 }
@@ -248,8 +238,6 @@ public class VoiceActivity extends AppCompatActivity {
 
             /** 음성인식 재시작 */
             mRecognizer.startListening(intent);
-
-            print(map);
         }
 
         @Override
@@ -270,15 +258,11 @@ public class VoiceActivity extends AppCompatActivity {
 
                     if(set.contains(targetWord)) {
                         // 만약 이미 출력한 단어면 생략
-                        Log.d("알림", targetWord + ": 이미 출력한 단어입니다.");
                     } else {
                         /** 중요명사면 출력 **/
                         if(isImportant(map, targetWord) == true) {
-                            Log.d("알림", targetWord + ": 중요 명사입니다.");
                             set.add(targetWord);
                             q.offer(targetWord);
-                        } else {
-                            Log.d("알림", targetWord + ": 중요하지 않은 명사입니다.");
                         }
                     }
                 }
