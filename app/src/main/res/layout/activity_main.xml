@@ -49,13 +49,15 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView16"
+    <Button
+        android:id="@+id/dbButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:text="databse 확인"
+        android:onClick="dbClicked"
         android:textSize="30dp"
-        android:visibility="invisible" />
+        android:visibility="visible" />
 
     <TextView
         android:id="@+id/textView26"
@@ -138,7 +140,7 @@
             android:gravity="center"
             android:textSize="30dp"
             android:visibility="invisible" />
-
     </LinearLayout>
+
 
 </LinearLayout>

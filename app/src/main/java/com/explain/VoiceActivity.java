@@ -128,6 +128,7 @@ public class VoiceActivity extends AppCompatActivity {
         });
     }
 
+
     public void onPause() {
         super.onPause();
         db.deleteData();
@@ -159,7 +160,7 @@ public class VoiceActivity extends AppCompatActivity {
         if(numberOfNoun == 0)
             averageUseCount = 1;
         else
-            averageUseCount = (double) totalCountOfNoun / numberOfNoun;
+            averageUseCount = (double)totalCountOfNoun / (double)numberOfNoun;
 
 
         if(data.get(targetWord) < averageUseCount)

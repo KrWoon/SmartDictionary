@@ -20,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        long startTime = System.currentTimeMillis();
         InputStream[] in = new InputStream[19];
 
         /* 파일을 통해 단어를 받는 부분 */
@@ -81,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void exitClicked(View v) {
         finish();
+    }
+
+    public void dbClicked(View v) {
+        Intent startIntent = new Intent(getApplicationContext(), DbActivity.class);
+        startActivity(startIntent);
     }
 }
 
