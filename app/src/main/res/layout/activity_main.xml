@@ -53,8 +53,9 @@
         android:id="@+id/dbButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
         android:gravity="center"
-        android:text="databse 확인"
         android:onClick="dbClicked"
         android:textSize="30dp"
         android:visibility="visible" />
